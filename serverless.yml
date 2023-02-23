@@ -1,0 +1,36 @@
+service: senac-alarmobo
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: sa-east-1
+  versionFunctions: false
+  memorySize: 128
+  logRetentionInDays: 14
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - lambda:InvokeFunction
+          Resource: "*"
+
+functions:
+  azure-cost:
+    handler: index.azureCosts
+    timeout: 30
+    events:
+      - schedule:
+          rate: rate(1 week)
+          enabled: true
+          input:
+            partner: bb
+            stageParams:
+              stage: ${self:provider.stage}
+
+package:
+  patterns:
+    - "!./**"
+    - ./bin/**
